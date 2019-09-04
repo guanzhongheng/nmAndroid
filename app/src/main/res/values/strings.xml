@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">NPERP</string>
+    <string name="button_str_scan">SCAN</string>
+    <string name="to_outbound_order">Check Outbound Order</string>
+    <string name="out_stock">Out Stock</string>
+    <string name="out_stock_detail">Out Stock Detail</string>
+</resources>
