@@ -30,6 +30,8 @@ import com.sznewbest.scansdkdemo.http.NmerpConnect;
 import com.sznewbest.scansdkdemo.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class OutStockDetailActivity extends AppCompatActivity {
@@ -57,7 +59,6 @@ public class OutStockDetailActivity extends AppCompatActivity {
         button_detail_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 OutStockDetailActivity.this.finish();
             }
         });
@@ -105,14 +106,20 @@ public class OutStockDetailActivity extends AppCompatActivity {
                 .execute(new StringCallback() {
                              @Override
                              public void onSuccess(Response<String> response) {
-
                                  datas = new ArrayList<OutStockDetailVo>();
                                  Gson gson = new Gson();
                                  JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
                                  for (JsonElement jsonElement : arry) {
                                      datas.add(gson.fromJson(jsonElement, OutStockDetailVo.class));
                                  }
-
+                                 // 数据序号倒序显示
+                                 Collections.sort(datas, new Comparator<OutStockDetailVo>() {
+                                     @Override
+                                     public int compare(OutStockDetailVo outStockDetailVo, OutStockDetailVo t1) {
+                                         Long i = t1.getOutStockDetailId() - outStockDetailVo.getOutStockDetailId();
+                                         return i.intValue();
+                                     }
+                                 });
                                  adapter = new OutStockDetailAdapter(OutStockDetailActivity.this, datas);
                                  detail_listview.setAdapter(adapter);
                              }
@@ -168,10 +175,11 @@ public class OutStockDetailActivity extends AppCompatActivity {
                             if(datas == null || datas.size() == 0 ){
                                 showScanConfirmDialog(prodVo,code);
                             }else{
-                                if(prodVo.getOrdCode() != null && prodVo.getOrdCode().equals(datas.get(0).getOrdCode())){
+                                if(prodVo.getOrdCode() != null && prodVo.getCusCode() != null
+                                        && prodVo.getCusCode().equals(datas.get(0).getCusCode())){
                                     showScanConfirmDialog(prodVo,code);
                                 }else{
-                                    Toast.makeText(OutStockDetailActivity.this,"该产品与当前出库单中的其他产品不属于同一个订单！请检查后再试。",
+                                    Toast.makeText(OutStockDetailActivity.this,"该产品与当前出库单中的其他产品不属于同一个关联客户！请检查后再试。",
                                             Toast.LENGTH_LONG).show();
                                 }
                             }

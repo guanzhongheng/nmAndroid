@@ -5,6 +5,7 @@ public class OutStockDetailVo {
     private Long stockId;
     private String outCode;
     private String barCode;
+    private String cusCode;
     private String ordCode;
     private String itemCode;
     private Double itemLenth;
@@ -27,6 +28,15 @@ public class OutStockDetailVo {
     private String itemColorValue;
     //0-未扫描 1-已扫描确认过
     private Character isOut;
+
+
+    public String getCusCode() {
+        return cusCode;
+    }
+
+    public void setCusCode(String cusCode) {
+        this.cusCode = cusCode;
+    }
 
     public String getItemYcTypeValue() {
         return itemYcTypeValue;

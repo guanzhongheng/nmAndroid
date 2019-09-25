@@ -72,7 +72,7 @@ public class OutStockDetailAdapter extends BaseAdapter {
         }
 
         final OutStockDetailVo item = getItem(i);
-        int item_index = i+1;
+        int item_index =  getCount() - i;
         holder.out_stock_detail_icon.setImageResource(R.drawable.out_stock_detail);
         holder.item_index.setText("序号:"+ item_index);
         holder.item_bar_code.setText("条码号:"+ StringUtils.ifNull(item.getBarCode()));

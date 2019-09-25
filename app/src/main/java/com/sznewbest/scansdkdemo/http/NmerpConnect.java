@@ -1,8 +1,8 @@
 package com.sznewbest.scansdkdemo.http;
 
 public class NmerpConnect {
-    public static final String BASE_URL = "http://47.104.243.197:8090";
-//    public static final String BASE_URL = "http://192.168.101.8:8090";
+ //   public static final String BASE_URL = "http://47.104.243.197:8090";
+    public static final String BASE_URL = "http://192.168.8.57:8090";
 
     private static String append(String url){
         return BASE_URL + url;
