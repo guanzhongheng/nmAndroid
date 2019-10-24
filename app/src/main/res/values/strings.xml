@@ -1,7 +1,9 @@
 <resources>
-    <string name="app_name">NPERP</string>
-    <string name="button_str_scan">SCAN</string>
-    <string name="to_outbound_order">Check Outbound Order</string>
-    <string name="out_stock">Out Stock</string>
-    <string name="out_stock_detail">Out Stock Detail</string>
+    <string name="app_name">农膜扫码</string>
+    <string name="button_str_scan">扫描</string>
+    <string name="to_outbound_order">查看出库单</string>
+    <string name="button_add_outstock" >查看出库单</string>
+    <string name="out_stock">出库单</string>
+    <string name="auto_scan">自动识别扫描</string>
+    <string name="out_stock_detail">出库单详情</string>
 </resources>

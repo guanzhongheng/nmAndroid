@@ -3,6 +3,8 @@
     <string name="app_name">扫描出库</string>
     <string name="button_str_scan">扫描测试</string>
     <string name="to_outbound_order">查看出库单</string>
+    <string name="button_add_outstock">新建出库单</string>
     <string name="out_stock">出库单</string>
+    <string name="auto_scan">自动识别扫描</string>
     <string name="out_stock_detail">出库单详情</string>
 </resources>

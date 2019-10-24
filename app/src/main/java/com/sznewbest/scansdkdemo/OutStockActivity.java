@@ -1,6 +1,7 @@
 package com.sznewbest.scansdkdemo;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -29,6 +30,7 @@ public class OutStockActivity extends AppCompatActivity {
     private ListView listView;
     private OutStockAdapter adapter;
     private Button addNewOutStock;
+    private Button scanOutStockInfo;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,15 +43,36 @@ public class OutStockActivity extends AppCompatActivity {
         View emptyView = findViewById(R.id.empty_tv);
         listView.setEmptyView(emptyView);
 
+        // 原有出库单逻辑
+//        addNewOutStock = (Button) findViewById(R.id.button_add_outstock);
+//        addNewOutStock.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                showConfirmDialog();
+//            }
+//        });
+
+        // 出库单修改 TODO 20191017 增加创建页面
         addNewOutStock = (Button) findViewById(R.id.button_add_outstock);
-        addNewOutStock.setOnClickListener(new View.OnClickListener() {
+        addNewOutStock.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                showConfirmDialog();
+                Intent intent = new Intent();
+                intent.setClass(OutStockActivity.this, CreateOutOrderActivity.class);
+                startActivity(intent);
             }
         });
 
-        refreshList();
+        // 增加自动扫描
+        scanOutStockInfo =  (Button) findViewById(R.id.button_scan_outstockInfo);
+        scanOutStockInfo.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setClass(OutStockActivity.this, ScanProdActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 
@@ -70,14 +93,12 @@ public class OutStockActivity extends AppCompatActivity {
                 .execute(new StringCallback() {
                              @Override
                              public void onSuccess(Response<String> response) {
-
                                  List<OutStock> datas = new ArrayList<OutStock>();
                                  Gson gson = new Gson();
                                  JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
                                  for (JsonElement jsonElement : arry) {
                                      datas.add(gson.fromJson(jsonElement, OutStock.class));
                                  }
-
                                  adapter = new OutStockAdapter(OutStockActivity.this, datas);
                                  listView.setAdapter(adapter);
                              }
@@ -91,6 +112,7 @@ public class OutStockActivity extends AppCompatActivity {
                 );
     }
 
+    //新建出库单
     private void showConfirmDialog(){
         final AlertDialog.Builder normalDialog =
                 new AlertDialog.Builder(OutStockActivity.this);
@@ -122,4 +144,11 @@ public class OutStockActivity extends AppCompatActivity {
         // 显示
         normalDialog.show();
     }
+
+
+
+    private void sanOutOrderInfo(){
+
+    }
+
 }

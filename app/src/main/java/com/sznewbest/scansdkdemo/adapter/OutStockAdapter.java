@@ -68,6 +68,8 @@ public class OutStockAdapter extends BaseAdapter {
             holder = new ViewHolder();
             holder.out_stock_icon = (ImageView) view.findViewById(R.id.out_stock_icon);
             holder.out_stock_id = (TextView) view.findViewById(R.id.out_stock_id);
+            holder.out_cus_name =  (TextView) view.findViewById(R.id.out_cus_name);
+            holder.car_no =  (TextView) view.findViewById(R.id.car_no);
             holder.to_detail = (Button) view.findViewById(R.id.to_detail);
             holder.delete_out_stock = (Button) view.findViewById(R.id.delete_out_stock);
             holder.finish_out_stock = (Button) view.findViewById(R.id.finish_out_stock);
@@ -80,6 +82,9 @@ public class OutStockAdapter extends BaseAdapter {
         final String outCode = order.getOutCode();
         holder.out_stock_icon.setImageResource(R.drawable.out_stock);
         holder.out_stock_id.setText("出库单"+outCode);
+        holder.out_cus_name.setText(" 关联客户:" + order.getCusName());
+        holder.car_no.setText(" 车牌号:" + order.getCarNo());
+
         holder.to_detail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -177,6 +182,8 @@ public class OutStockAdapter extends BaseAdapter {
     private class ViewHolder{
         ImageView out_stock_icon;
         TextView out_stock_id;
+        TextView out_cus_name;
+        TextView car_no;
         Button delete_out_stock;
         Button finish_out_stock;
         Button to_detail;

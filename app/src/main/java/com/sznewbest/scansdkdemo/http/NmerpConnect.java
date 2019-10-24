@@ -1,8 +1,9 @@
 package com.sznewbest.scansdkdemo.http;
 
 public class NmerpConnect {
- //   public static final String BASE_URL = "http://47.104.243.197:8090";
-    public static final String BASE_URL = "http://192.168.8.57:8090";
+  //  public static final String BASE_URL = "http://47.104.243.197:8090";
+      public static final String BASE_URL = "http://192.168.8.57:8090";
+   // public static final String BASE_URL = "http://127.0.0.1:8090";
 
     private static String append(String url){
         return BASE_URL + url;
@@ -16,4 +17,10 @@ public class NmerpConnect {
     public static final String DO_OUT_STOCK = append("/tOutStock/doOutStock");
     public static final String DELETE_BY_CODE = append("/tOutStock/deleteByCode");
     public static final String FINISH_OUT_STOCK = append("/tOutStock/finishOutStock");
+
+    public static final String CUS_INFO_LIST = append("/tOutStock/getCusInfoList");
+    public static final String CUS_CAR_LIST = append("/tOutStock/getCarList");
+    public static final String CREATE_OUT_STOCK_NEW = append("/tOutStock/createNew");
+    public static final String DO_OUT_AUTO_STOCK = append("/tOutStock/doOutStockNew");
+
 }

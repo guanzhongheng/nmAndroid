@@ -10,6 +10,14 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    android.applicationVariants.all {
+        variant ->
+            variant.outputs.all {
+                // 此处指定生成的apk文件名
+                outputFileName = "nmErp.apk"
+            }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -28,4 +36,5 @@ dependencies {
     implementation 'com.lzy.net:okgo:3.0.4'
     //json解析
     api 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
 }

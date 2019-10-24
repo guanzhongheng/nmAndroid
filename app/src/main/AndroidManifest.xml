@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sznewbest.scansdkdemo">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -19,17 +19,25 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".OutStockActivity"
+            android:name=".CreateOutOrderActivity"
+            android:label="@string/button_add_outstock"
             android:launchMode="singleTask"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ScanProdActivity"
+            android:label="@string/auto_scan"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".OutStockActivity"
             android:label="@string/out_stock"
-            android:screenOrientation="portrait">
-        </activity>
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"></activity>
         <activity
             android:name=".OutStockDetailActivity"
-            android:launchMode="singleTask"
             android:label="@string/out_stock_detail"
-            android:screenOrientation="portrait">
-        </activity>
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

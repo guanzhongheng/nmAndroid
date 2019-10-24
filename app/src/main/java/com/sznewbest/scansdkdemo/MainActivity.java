@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity  {
 
             }
         });
+
         //注册接扫描结果收消息广播
         if(scanBroadcastReceiver==null) {
             scanBroadcastReceiver = new ScanBroadcastReceiver();

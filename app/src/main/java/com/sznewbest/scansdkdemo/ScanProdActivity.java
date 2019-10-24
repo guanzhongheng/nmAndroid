@@ -12,8 +12,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,120 +25,123 @@ import com.google.gson.JsonParser;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
-import com.sznewbest.scansdkdemo.adapter.OutStockDetailAdapter;
 import com.sznewbest.scansdkdemo.entity.OutStockDetailVo;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
 import com.sznewbest.scansdkdemo.utils.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-public class OutStockDetailActivity extends AppCompatActivity {
-    private ListView detail_listview;
-    private OutStockDetailAdapter adapter;
-    private Button button_detail_back;
-    private Button button_detail_scan;
-    private String outCode;
-    private OutStockDetailActivity.ScanBroadcastReceiver scanBroadcastReceiver = null;
-    private List<OutStockDetailVo> datas = null;
+public class ScanProdActivity extends AppCompatActivity {
+
+    private Button button_back_detail;
+    private Button button_scan_info;
+    private Spinner car_no;
+    private List<String> carList = new ArrayList<>();
+    private ArrayAdapter<String> arrayScanAdapter;
+    private ScanProdActivity.ScanBroadcastNewReceiver scanBroadcastNewReceiver = null;
+
+    private String carNo;
+
+
     @Override
-    protected void onCreate(@Nullable Bundle bundle) {
-        super.onCreate(bundle);
-        setContentView(R.layout.activity_out_stock_detail);
-        Intent intent = getIntent();
-        outCode = intent.getStringExtra("outCode");
-        // 获取界面组件
-        detail_listview = (ListView) findViewById(R.id.detail_listview);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_scan_info);
 
-        // 添加列表空内容视图
-        View emptyView = findViewById(R.id.detail_empty_tv);
-        detail_listview.setEmptyView(emptyView);
+        car_no = findViewById(R.id.car_no);
+        carList.add("请选择");
+        arrayScanAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, carList);
+        arrayScanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        button_detail_back = (Button) findViewById(R.id.button_detail_back);
-        button_detail_back.setOnClickListener(new View.OnClickListener() {
+        car_no.setAdapter(arrayScanAdapter);
+        //设置默认值
+        car_no.setVisibility(View.VISIBLE);
+
+        // 返回按钮
+        button_back_detail = (Button) findViewById(R.id.button_back_detail);
+        button_back_detail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                OutStockDetailActivity.this.finish();
+                ScanProdActivity.this.finish();
             }
         });
 
-        button_detail_scan = (Button) findViewById(R.id.button_detail_scan);
-        button_detail_scan.setOnClickListener(new View.OnClickListener() {
+        // 扫描
+        button_scan_info = findViewById(R.id.button_scan_info);
+        button_scan_info.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //app发送按键广播消息方式
+                carNo = car_no.getSelectedItem().toString();
+                if("请选择".equals(carNo) || "-".equals(StringUtils.ifNull(carNo))){
+                    Toast.makeText(ScanProdActivity.this,"请选择车牌号",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Intent intentBroadcast = new Intent();
                 intentBroadcast.setAction("com.zkc.keycode");
                 intentBroadcast.putExtra("keyvalue", 136);
+                intentBroadcast.putExtra("carNoInfo", carNo);
                 sendBroadcast(intentBroadcast);
             }
         });
 
         //注册接扫描结果收消息广播
-        if(scanBroadcastReceiver==null) {
-            scanBroadcastReceiver = new OutStockDetailActivity.ScanBroadcastReceiver();
+        if(scanBroadcastNewReceiver==null) {
+            scanBroadcastNewReceiver = new ScanProdActivity.ScanBroadcastNewReceiver();
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction("com.zkc.scancode");
-            this.registerReceiver(scanBroadcastReceiver, intentFilter);
+            this.registerReceiver(scanBroadcastNewReceiver, intentFilter);
         }
-
-        refreshList(outCode);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.unregisterReceiver(scanBroadcastReceiver);
+        this.unregisterReceiver(scanBroadcastNewReceiver);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i("start2","1");
-        refreshList(outCode);
+    protected void onStart() {
+        super.onStart();
+        getAjaxCarInfos();
+
     }
 
-    private void refreshList(String outCode){
-        // 初始化列表
-        OkGo.<String>get(NmerpConnect.DETAIL_LIST)
+    public void getAjaxCarInfos() {
+        // 调用接口获取客户列表信息
+        OkGo.<String>post(NmerpConnect.CUS_CAR_LIST)
                 .tag(this)
-                .params("outCode",outCode)
                 .execute(new StringCallback() {
-                             @Override
-                             public void onSuccess(Response<String> response) {
-                                 datas = new ArrayList<OutStockDetailVo>();
-                                 Gson gson = new Gson();
-                                 JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
-                                 for (JsonElement jsonElement : arry) {
-                                     datas.add(gson.fromJson(jsonElement, OutStockDetailVo.class));
-                                 }
-                                 // 数据序号倒序显示
-                                 Collections.sort(datas, new Comparator<OutStockDetailVo>() {
-                                     @Override
-                                     public int compare(OutStockDetailVo outStockDetailVo, OutStockDetailVo t1) {
-                                         Long i = t1.getOutStockDetailId() - outStockDetailVo.getOutStockDetailId();
-                                         return i.intValue();
-                                     }
-                                 });
-                                 adapter = new OutStockDetailAdapter(OutStockDetailActivity.this, datas);
-                                 detail_listview.setAdapter(adapter);
-                             }
+                    @Override
+                    public void onSuccess(Response<String> response) {
 
-                             @Override
-                             public void onError(Response<String> response) {
-                                 super.onError(response);
-                             }
-                         }
+                        List<String> datas = new ArrayList<>();
+                        Gson gson = new Gson();
+                        JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
+                        for (JsonElement jsonElement : arry) {
+                            carList.add(jsonElement.toString().replaceAll("\"",""));
+                        }
+                    }
 
-                );
+                    @Override
+                    public void onError(Response<String> response) {
+                        super.onError(response);
+                        Toast.makeText(ScanProdActivity.this,"获取车牌号失败。",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                });
+
     }
+
 
     /**
      * 扫描结果广播
      */
-    class ScanBroadcastReceiver extends BroadcastReceiver {
+    class ScanBroadcastNewReceiver extends BroadcastReceiver {
+
         @Override
         public void onReceive(Context context, Intent intent) {
             // TODO Auto-generated method stub
@@ -158,6 +162,11 @@ public class OutStockDetailActivity extends AppCompatActivity {
     }
 
     private void showDialogAfterScan(String barCode){
+        if("请选择".equals(carNo) || "-".equals(StringUtils.ifNull(carNo))){
+            Toast.makeText(ScanProdActivity.this,"请选择车牌号",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         final String code = barCode;
         OkGo.<String>get(NmerpConnect.GET_PROD_DETAIL)
                 .tag(this)
@@ -167,32 +176,21 @@ public class OutStockDetailActivity extends AppCompatActivity {
                     public void onSuccess(Response<String> response) {
                         Gson gson = new Gson();
                         OutStockDetailVo prodVo = gson.fromJson(response.body(),OutStockDetailVo.class);
-
                         if(prodVo.getStockId() == null || "".equals(prodVo.getStockId())){
-                            Toast.makeText(OutStockDetailActivity.this,"该条码在系统中不存在，请确认后再试。",
+                            Toast.makeText(ScanProdActivity.this,"该条码在系统中不存在，请确认后再试。",
                                     Toast.LENGTH_LONG).show();
                         }else{
-                            if(datas == null || datas.size() == 0 ){
-                                showScanConfirmDialog(prodVo,code);
-                            }else{
-                                if(prodVo.getOrdCode() != null && prodVo.getCusCode() != null
-                                        && prodVo.getCusCode().equals(datas.get(0).getCusCode())){
-                                    showScanConfirmDialog(prodVo,code);
-                                }else{
-                                    Toast.makeText(OutStockDetailActivity.this,"该产品与当前出库单中的其他产品不属于同一个关联客户！请检查后再试。",
-                                            Toast.LENGTH_LONG).show();
-                                }
-                            }
+                            showScanConfirmDialog(prodVo,code,carNo);
                         }
 
                     }
                 });
     }
 
-    private void showScanConfirmDialog(OutStockDetailVo prodVo,final String barCode){
+    private void showScanConfirmDialog(OutStockDetailVo prodVo,final String barCode, final String carNo){
         AlertDialog.Builder scDialog =
-                new AlertDialog.Builder(OutStockDetailActivity.this);
-        final View dialogView = LayoutInflater.from(OutStockDetailActivity.this)
+                new AlertDialog.Builder(ScanProdActivity.this);
+        final View dialogView = LayoutInflater.from(ScanProdActivity.this)
                 .inflate(R.layout.scan_info_confirm_dialog,null);
         scDialog.setView(dialogView);
 
@@ -257,16 +255,25 @@ public class OutStockDetailActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(final DialogInterface dialog, int which) {
-                            OkGo.<String>post(NmerpConnect.DO_OUT_STOCK)
+                            OkGo.<String>post(NmerpConnect.DO_OUT_AUTO_STOCK)
                                     .tag(this)
-                                    .params("outCode",outCode)
+                                    .params("carNo",carNo)
                                     .params("barCode",barCode)
                                     .execute(new StringCallback() {
                                         @Override
                                         public void onSuccess(Response<String> response) {
-                                            Toast.makeText(OutStockDetailActivity.this,"出库成功！",
+                                            String res = response.body().toString();
+                                            if("-1".equals(res)){
+                                                Toast.makeText(ScanProdActivity.this,"产品不存在出库单关联！",
+                                                        Toast.LENGTH_SHORT).show();
+                                                return;
+                                            }else if("0".equals(res)){
+                                                Toast.makeText(ScanProdActivity.this,"出库单已经存在该产品！",
+                                                        Toast.LENGTH_SHORT).show();
+                                                return;
+                                            }
+                                            Toast.makeText(ScanProdActivity.this,"出库成功！",
                                                     Toast.LENGTH_SHORT).show();
-                                            refreshList(outCode);
                                             dialog.dismiss();
                                         }
                                     });
@@ -281,7 +288,7 @@ public class OutStockDetailActivity extends AppCompatActivity {
                         }
                     });
         }
-
         scDialog.show();
     }
+
 }

@@ -16,6 +16,8 @@ import java.util.Date;
 public class OutStock {
     private String outCode;
     private String cusName;
+    private String cusCode;
+    private String carNo;
     private String receiver;
     private String phone;
     private String address;
@@ -25,6 +27,22 @@ public class OutStock {
     private Date updateTime;
     private String updateBy;
     private String remarks;
+
+    public String getCusCode() {
+        return cusCode;
+    }
+
+    public void setCusCode(String cusCode) {
+        this.cusCode = cusCode;
+    }
+
+    public String getCarNo() {
+        return carNo;
+    }
+
+    public void setCarNo(String carNo) {
+        this.carNo = carNo;
+    }
 
     public void setOutCode (String outCode) {this.outCode = outCode;}
     public String getOutCode(){ return outCode;}
