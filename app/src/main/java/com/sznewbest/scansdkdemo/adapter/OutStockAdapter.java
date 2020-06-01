@@ -154,7 +154,7 @@ public class OutStockAdapter extends BaseAdapter {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        OkGo.<String>post(NmerpConnect.DELETE_BY_CODE)
+                        OkGo.<String>delete(NmerpConnect.DELETE_BY_CODE)
                                 .tag(this)
                                 .params("outCode",outCode)
                                 .execute(new StringCallback() {

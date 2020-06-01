@@ -17,7 +17,11 @@ import com.google.gson.JsonParser;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
+import com.sznewbest.scansdkdemo.adapter.OutStockAdapter;
+import com.sznewbest.scansdkdemo.callback.DialogCallback;
 import com.sznewbest.scansdkdemo.entity.CusManageVo;
+import com.sznewbest.scansdkdemo.entity.NmResponse;
+import com.sznewbest.scansdkdemo.entity.OutStock;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
 import com.sznewbest.scansdkdemo.utils.StringUtils;
 
@@ -91,7 +95,6 @@ public class CreateOutOrderActivity extends AppCompatActivity {
             return;
         }
         Map<String, String> params = new HashMap<>();
-        params.put("cusName",cusName);
         params.put("carNo",carNoInfo);
         params.put("cusCode",cusMap.get(cusName));
         showConfirmForSave(params);
@@ -106,20 +109,14 @@ public class CreateOutOrderActivity extends AppCompatActivity {
 
     public void getAjaxCusInfos() {
         // 调用接口获取客户列表信息
-        OkGo.<String>post(NmerpConnect.CUS_INFO_LIST)
+        OkGo.<NmResponse<List<CusManageVo>>>get(NmerpConnect.CUS_INFO_LIST)
                 .tag(this)
-                .execute(new StringCallback() {
+                .execute(new DialogCallback<NmResponse<List<CusManageVo>>>(this){
                     @Override
-                    public void onSuccess(Response<String> response) {
-
-                        List<CusManageVo> datas = new ArrayList<CusManageVo>();
-                        Gson gson = new Gson();
-                        JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
-                        for (JsonElement jsonElement : arry) {
-                            datas.add(gson.fromJson(jsonElement, CusManageVo.class));
-                        }
-                        if (datas != null && datas.size() > 0) {
-                            for (CusManageVo c : datas) {
+                    public void onSuccess(Response<NmResponse<List<CusManageVo>>> response) {
+                        NmResponse<List<CusManageVo>> nm = response.body();
+                        if (nm.result != null && nm.result.size() > 0) {
+                            for (CusManageVo c : nm.result) {
                                 if (cusMap.get(c.getCusName()) == null) {
                                     cusList.add(c.getCusName());
                                     cusMap.put(c.getCusName(), c.getCusCode());
@@ -129,13 +126,44 @@ public class CreateOutOrderActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(Response<String> response) {
+                    public void onError(Response<NmResponse<List<CusManageVo>>> response) {
                         super.onError(response);
                         Toast.makeText(CreateOutOrderActivity.this,"出库单创建失败。",
                                 Toast.LENGTH_SHORT).show();
                     }
-
                 });
+        // 调用接口获取客户列表信息
+
+//        OkGo.<String>post(NmerpConnect.CUS_INFO_LIST)
+//                .tag(this)
+//                .execute(new StringCallback() {
+//                    @Override
+//                    public void onSuccess(Response<String> response) {
+//
+//                        List<CusManageVo> datas = new ArrayList<CusManageVo>();
+//                        Gson gson = new Gson();
+//                        JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
+//                        for (JsonElement jsonElement : arry) {
+//                            datas.add(gson.fromJson(jsonElement, CusManageVo.class));
+//                        }
+//                        if (datas != null && datas.size() > 0) {
+//                            for (CusManageVo c : datas) {
+//                                if (cusMap.get(c.getCusName()) == null) {
+//                                    cusList.add(c.getCusName());
+//                                    cusMap.put(c.getCusName(), c.getCusCode());
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onError(Response<String> response) {
+//                        super.onError(response);
+//                        Toast.makeText(CreateOutOrderActivity.this,"出库单创建失败。",
+//                                Toast.LENGTH_SHORT).show();
+//                    }
+//
+//                });
 
     }
 

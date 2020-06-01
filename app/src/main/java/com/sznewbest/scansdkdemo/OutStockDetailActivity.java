@@ -25,6 +25,9 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.sznewbest.scansdkdemo.adapter.OutStockDetailAdapter;
+import com.sznewbest.scansdkdemo.callback.DialogCallback;
+import com.sznewbest.scansdkdemo.callback.JsonCallback;
+import com.sznewbest.scansdkdemo.entity.NmResponse;
 import com.sznewbest.scansdkdemo.entity.OutStockDetailVo;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
 import com.sznewbest.scansdkdemo.utils.StringUtils;
@@ -114,13 +117,13 @@ public class OutStockDetailActivity extends AppCompatActivity {
                                      datas.add(gson.fromJson(jsonElement, OutStockDetailVo.class));
                                  }
                                  // 数据序号倒序显示
-                                 Collections.sort(datas, new Comparator<OutStockDetailVo>() {
-                                     @Override
-                                     public int compare(OutStockDetailVo outStockDetailVo, OutStockDetailVo t1) {
-                                         Long i = t1.getOutStockDetailId() - outStockDetailVo.getOutStockDetailId();
-                                         return i.intValue();
-                                     }
-                                 });
+//                                 Collections.sort(datas, new Comparator<OutStockDetailVo>() {
+//                                     @Override
+//                                     public int compare(OutStockDetailVo outStockDetailVo, OutStockDetailVo t1) {
+//                                         Long i = t1.getOutStockDetailId() - outStockDetailVo.getOutStockDetailId();
+//                                         return i.intValue();
+//                                     }
+//                                 });
                                  adapter = new OutStockDetailAdapter(OutStockDetailActivity.this, datas);
                                  detail_listview.setAdapter(adapter);
                              }
@@ -159,19 +162,15 @@ public class OutStockDetailActivity extends AppCompatActivity {
 
     private void showDialogAfterScan(String barCode){
         final String code = barCode;
-        OkGo.<String>get(NmerpConnect.GET_PROD_DETAIL)
+        OkGo.<NmResponse<OutStockDetailVo>>get(NmerpConnect.GET_PROD_DETAIL)
                 .tag(this)
                 .params("barCode",code)
-                .execute(new StringCallback() {
+                .execute(new JsonCallback<NmResponse<OutStockDetailVo>>() {
                     @Override
-                    public void onSuccess(Response<String> response) {
-                        Gson gson = new Gson();
-                        OutStockDetailVo prodVo = gson.fromJson(response.body(),OutStockDetailVo.class);
-
-                        if(prodVo.getStockId() == null || "".equals(prodVo.getStockId())){
-                            Toast.makeText(OutStockDetailActivity.this,"该条码在系统中不存在，请确认后再试。",
-                                    Toast.LENGTH_LONG).show();
-                        }else{
+                    public void onSuccess(Response<NmResponse<OutStockDetailVo>> response) {
+                        NmResponse<OutStockDetailVo> nm = response.body();
+                        if (nm.code == 200) {
+                            OutStockDetailVo prodVo = nm.result;
                             if(datas == null || datas.size() == 0 ){
                                 showScanConfirmDialog(prodVo,code);
                             }else{
@@ -183,10 +182,38 @@ public class OutStockDetailActivity extends AppCompatActivity {
                                             Toast.LENGTH_LONG).show();
                                 }
                             }
+                        }else {
+                            Toast.makeText(OutStockDetailActivity.this,"未能获取该条码对应产品信息。",
+                                    Toast.LENGTH_LONG).show();
                         }
 
                     }
                 });
+//                .execute(new StringCallback() {
+//                    @Override
+//                    public void onSuccess(Response<String> response) {
+//                        Gson gson = new Gson();
+//                        OutStockDetailVo prodVo = gson.fromJson(response.body(),OutStockDetailVo.class);
+//
+//                        if(prodVo.getStockId() == null || "".equals(prodVo.getStockId())){
+//                            Toast.makeText(OutStockDetailActivity.this,"该条码在系统中不存在，请确认后再试。",
+//                                    Toast.LENGTH_LONG).show();
+//                        }else{
+//                            if(datas == null || datas.size() == 0 ){
+//                                showScanConfirmDialog(prodVo,code);
+//                            }else{
+//                                if(prodVo.getOrdCode() != null && prodVo.getCusCode() != null
+//                                        && prodVo.getCusCode().equals(datas.get(0).getCusCode())){
+//                                    showScanConfirmDialog(prodVo,code);
+//                                }else{
+//                                    Toast.makeText(OutStockDetailActivity.this,"该产品与当前出库单中的其他产品不属于同一个关联客户！请检查后再试。",
+//                                            Toast.LENGTH_LONG).show();
+//                                }
+//                            }
+//                        }
+//
+//                    }
+//                });
     }
 
     private void showScanConfirmDialog(OutStockDetailVo prodVo,final String barCode){
@@ -206,44 +233,44 @@ public class OutStockDetailActivity extends AppCompatActivity {
         prod_itemOwner.setText("所属人:"+StringUtils.ifNull(prodVo.getItemOwner()));
 
         TextView prod_itemCgyCode = (TextView)dialogView.findViewById(R.id.prod_itemCgyCode);
-        prod_itemCgyCode.setText("类别:"+StringUtils.ifNull(prodVo.getItemCgyCodeValue()));
+        prod_itemCgyCode.setText("类别:"+StringUtils.ifNull(prodVo.getProdCgyVal()));
 
         TextView prod_itemVariety = (TextView)dialogView.findViewById(R.id.prod_itemVariety);
-        prod_itemVariety.setText("品种:"+StringUtils.ifNull(prodVo.getItemVarietyValue()));
+        prod_itemVariety.setText("品种:"+StringUtils.ifNull(prodVo.getProdVarietyVal()));
 
         TextView prod_itemColor = (TextView)dialogView.findViewById(R.id.prod_itemColor);
-        prod_itemColor.setText("颜色:"+StringUtils.ifNull(prodVo.getItemColorValue()));
+        prod_itemColor.setText("颜色:"+StringUtils.ifNull(prodVo.getProdColorVal()));
 
         TextView prod_itemYcType = (TextView)dialogView.findViewById(R.id.prod_itemYcType);
-        prod_itemYcType.setText("延长米计算类型:"+StringUtils.ifNull(prodVo.getItemYcTypeValue()));
+        prod_itemYcType.setText("延长米计算类型:"+StringUtils.ifNull(prodVo.getItemYcTypeVal()));
 
         TextView prod_itemYbType = (TextView)dialogView.findViewById(R.id.prod_itemYbType);
-        prod_itemYbType.setText("压边类型:"+StringUtils.ifNull(prodVo.getItemYbTypeValue()));
+        prod_itemYbType.setText("压边类型:"+StringUtils.ifNull(prodVo.getItemYbTypeVal()));
 
         TextView prod_itemWidth = (TextView)dialogView.findViewById(R.id.prod_itemWidth);
         prod_itemWidth.setText("宽度:"+StringUtils.ifNull(prodVo.getItemWidth())+"m");
 
         TextView prod_itemThick = (TextView)dialogView.findViewById(R.id.prod_itemThick);
-        prod_itemThick.setText("厚度:"+StringUtils.ifNull(prodVo.getItemThick())+"cm");
+        prod_itemThick.setText("厚度:"+StringUtils.ifNull(prodVo.getProdThick())+"cm");
 
         TextView prod_itemLenth = (TextView)dialogView.findViewById(R.id.prod_itemLenth);
         prod_itemLenth.setText("长度:"+StringUtils.ifNull(prodVo.getItemLenth())+"m");
 
         TextView prod_itemWeight = (TextView)dialogView.findViewById(R.id.prod_itemWeight);
-        prod_itemWeight.setText("重量:"+StringUtils.ifNull(prodVo.getItemWeight())+"kg");
+        prod_itemWeight.setText("重量:"+StringUtils.ifNull(prodVo.getProdWeight())+"kg");
 
         TextView prod_itemSq = (TextView)dialogView.findViewById(R.id.prod_itemSq);
-        prod_itemSq.setText("面积:"+StringUtils.ifNull(prodVo.getItemSq())+"㎡");
+        prod_itemSq.setText("面积:"+StringUtils.ifNull(prodVo.getItemLenth() * prodVo.getItemWidth())+"㎡");
 
         TextView prod_itemUnit = (TextView)dialogView.findViewById(R.id.prod_itemUnit);
-        prod_itemUnit.setText("单位:"+StringUtils.ifNull(prodVo.getItemUnitValue()));
+        prod_itemUnit.setText("计价方式:"+StringUtils.ifNull(prodVo.getProdPriceTypeVal()));
 
 
         Button button = (Button)dialogView.findViewById(R.id.prod_confirm);
         button.setText("此产品已出库");
         button.setClickable(false);
         if('1' == prodVo.getIsOut()){
-            scDialog.setTitle("此产品已包含在出库单内");
+            scDialog.setTitle("此产品已存在于出库单中");
             scDialog.setNegativeButton("关闭",
                     new DialogInterface.OnClickListener() {
                         @Override
@@ -257,19 +284,35 @@ public class OutStockDetailActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(final DialogInterface dialog, int which) {
-                            OkGo.<String>post(NmerpConnect.DO_OUT_STOCK)
+                            OkGo.<NmResponse<String>>post(NmerpConnect.DO_OUT_STOCK)
                                     .tag(this)
                                     .params("outCode",outCode)
                                     .params("barCode",barCode)
-                                    .execute(new StringCallback() {
+                                    .execute(new JsonCallback<NmResponse<String>>(){
                                         @Override
-                                        public void onSuccess(Response<String> response) {
-                                            Toast.makeText(OutStockDetailActivity.this,"出库成功！",
-                                                    Toast.LENGTH_SHORT).show();
-                                            refreshList(outCode);
-                                            dialog.dismiss();
+                                        public void onSuccess(Response<NmResponse<String>> response) {
+                                            NmResponse<String> nm = response.body();
+                                            if(nm.code == 200) {
+                                                Toast.makeText(OutStockDetailActivity.this,"出库成功！",
+                                                        Toast.LENGTH_SHORT).show();
+                                                refreshList(outCode);
+                                                dialog.dismiss();
+                                            }else {
+                                                Toast.makeText(OutStockDetailActivity.this,nm.message,
+                                                        Toast.LENGTH_SHORT).show();
+                                                return;
+                                            }
                                         }
                                     });
+//                                    .execute(new StringCallback() {
+//                                        @Override
+//                                        public void onSuccess(Response<String> response) {
+//                                            Toast.makeText(OutStockDetailActivity.this,"出库成功！",
+//                                                    Toast.LENGTH_SHORT).show();
+//                                            refreshList(outCode);
+//                                            dialog.dismiss();
+//                                        }
+//                                    });
 
                         }
                     });

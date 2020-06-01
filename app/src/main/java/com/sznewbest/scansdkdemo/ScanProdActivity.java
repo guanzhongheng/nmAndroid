@@ -25,6 +25,11 @@ import com.google.gson.JsonParser;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
+import com.sznewbest.scansdkdemo.adapter.OutStockAdapter;
+import com.sznewbest.scansdkdemo.callback.DialogCallback;
+import com.sznewbest.scansdkdemo.callback.JsonCallback;
+import com.sznewbest.scansdkdemo.entity.NmResponse;
+import com.sznewbest.scansdkdemo.entity.OutStock;
 import com.sznewbest.scansdkdemo.entity.OutStockDetailVo;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
 import com.sznewbest.scansdkdemo.utils.StringUtils;
@@ -111,28 +116,46 @@ public class ScanProdActivity extends AppCompatActivity {
 
     public void getAjaxCarInfos() {
         // 调用接口获取客户列表信息
-        OkGo.<String>post(NmerpConnect.CUS_CAR_LIST)
+        OkGo.<NmResponse<List<String>>>get(NmerpConnect.CUS_CAR_LIST)
                 .tag(this)
-                .execute(new StringCallback() {
+                .execute(new DialogCallback<NmResponse<List<String>>>(this){
                     @Override
-                    public void onSuccess(Response<String> response) {
-
-                        List<String> datas = new ArrayList<>();
-                        Gson gson = new Gson();
-                        JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
-                        for (JsonElement jsonElement : arry) {
-                            carList.add(jsonElement.toString().replaceAll("\"",""));
-                        }
+                    public void onSuccess(Response<NmResponse<List<String>>> response) {
+                        NmResponse<List<String>> nm = response.body();
+                        carList.addAll(nm.result);
                     }
 
                     @Override
-                    public void onError(Response<String> response) {
+                    public void onError(Response<NmResponse<List<String>>> response) {
                         super.onError(response);
                         Toast.makeText(ScanProdActivity.this,"获取车牌号失败。",
                                 Toast.LENGTH_SHORT).show();
                     }
-
                 });
+
+//        // 调用接口获取客户列表信息
+//        OkGo.<String>post(NmerpConnect.CUS_CAR_LIST)
+//                .tag(this)
+//                .execute(new StringCallback() {
+//                    @Override
+//                    public void onSuccess(Response<String> response) {
+//
+//                        List<String> datas = new ArrayList<>();
+//                        Gson gson = new Gson();
+//                        JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
+//                        for (JsonElement jsonElement : arry) {
+//                            carList.add(jsonElement.toString().replaceAll("\"",""));
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onError(Response<String> response) {
+//                        super.onError(response);
+//                        Toast.makeText(ScanProdActivity.this,"获取车牌号失败。",
+//                                Toast.LENGTH_SHORT).show();
+//                    }
+//
+//                });
 
     }
 
@@ -168,23 +191,37 @@ public class ScanProdActivity extends AppCompatActivity {
             return;
         }
         final String code = barCode;
-        OkGo.<String>get(NmerpConnect.GET_PROD_DETAIL)
+        OkGo.<NmResponse<OutStockDetailVo>>get(NmerpConnect.GET_PROD_DETAIL)
                 .tag(this)
                 .params("barCode",code)
-                .execute(new StringCallback() {
+                .execute(new JsonCallback<NmResponse<OutStockDetailVo>>() {
                     @Override
-                    public void onSuccess(Response<String> response) {
-                        Gson gson = new Gson();
-                        OutStockDetailVo prodVo = gson.fromJson(response.body(),OutStockDetailVo.class);
+                    public void onSuccess(Response<NmResponse<OutStockDetailVo>> response) {
+                        NmResponse<OutStockDetailVo> nm = response.body();
+                        OutStockDetailVo prodVo = nm.result;
                         if(prodVo.getStockId() == null || "".equals(prodVo.getStockId())){
                             Toast.makeText(ScanProdActivity.this,"该条码在系统中不存在，请确认后再试。",
                                     Toast.LENGTH_LONG).show();
                         }else{
                             showScanConfirmDialog(prodVo,code,carNo);
                         }
-
                     }
                 });
+//                .execute(new StringCallback() {
+//                    @Override
+//                    public void onSuccess(Response<String> response) {
+//                        Gson gson = new Gson();
+//                        OutStockDetailVo prodVo = gson.fromJson(response.body(),OutStockDetailVo.class);
+//
+//                        if(prodVo.getStockId() == null || "".equals(prodVo.getStockId())){
+//                            Toast.makeText(ScanProdActivity.this,"该条码在系统中不存在，请确认后再试。",
+//                                    Toast.LENGTH_LONG).show();
+//                        }else{
+//                            showScanConfirmDialog(prodVo,code,carNo);
+//                        }
+//
+//                    }
+//                });
     }
 
     private void showScanConfirmDialog(OutStockDetailVo prodVo,final String barCode, final String carNo){
@@ -241,7 +278,7 @@ public class ScanProdActivity extends AppCompatActivity {
         button.setText("此产品已出库");
         button.setClickable(false);
         if('1' == prodVo.getIsOut()){
-            scDialog.setTitle("此产品已包含在出库单内");
+            scDialog.setTitle("此产品已存在于出库单中");
             scDialog.setNegativeButton("关闭",
                     new DialogInterface.OnClickListener() {
                         @Override
@@ -255,28 +292,43 @@ public class ScanProdActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(final DialogInterface dialog, int which) {
-                            OkGo.<String>post(NmerpConnect.DO_OUT_AUTO_STOCK)
+                            OkGo.<NmResponse<String>>post(NmerpConnect.DO_OUT_AUTO_STOCK)
                                     .tag(this)
                                     .params("carNo",carNo)
                                     .params("barCode",barCode)
-                                    .execute(new StringCallback() {
+                                    .execute(new JsonCallback<NmResponse<String>>(){
                                         @Override
-                                        public void onSuccess(Response<String> response) {
-                                            String res = response.body().toString();
-                                            if("-1".equals(res)){
-                                                Toast.makeText(ScanProdActivity.this,"产品不存在出库单关联！",
+                                        public void onSuccess(Response<NmResponse<String>> response) {
+                                            NmResponse<String> nm = response.body();
+                                            if(nm.code == 200) {
+                                                Toast.makeText(ScanProdActivity.this,"出库成功！",
                                                         Toast.LENGTH_SHORT).show();
-                                                return;
-                                            }else if("0".equals(res)){
-                                                Toast.makeText(ScanProdActivity.this,"出库单已经存在该产品！",
+                                                dialog.dismiss();
+                                            }else {
+                                                Toast.makeText(ScanProdActivity.this,nm.message,
                                                         Toast.LENGTH_SHORT).show();
                                                 return;
                                             }
-                                            Toast.makeText(ScanProdActivity.this,"出库成功！",
-                                                    Toast.LENGTH_SHORT).show();
-                                            dialog.dismiss();
                                         }
                                     });
+//                                    .execute(new StringCallback() {
+//                                        @Override
+//                                        public void onSuccess(Response<String> response) {
+//                                            String res = response.body().toString();
+//                                            if("-1".equals(res)){
+//                                                Toast.makeText(ScanProdActivity.this,"产品不存在出库单关联！",
+//                                                        Toast.LENGTH_SHORT).show();
+//                                                return;
+//                                            }else if("0".equals(res)){
+//                                                Toast.makeText(ScanProdActivity.this,"出库单已经存在该产品！",
+//                                                        Toast.LENGTH_SHORT).show();
+//                                                return;
+//                                            }
+//                                            Toast.makeText(ScanProdActivity.this,"出库成功！",
+//                                                    Toast.LENGTH_SHORT).show();
+//                                            dialog.dismiss();
+//                                        }
+//                                    });
 
                         }
                     });

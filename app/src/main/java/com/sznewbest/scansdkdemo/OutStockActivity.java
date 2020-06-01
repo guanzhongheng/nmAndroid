@@ -20,6 +20,8 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.sznewbest.scansdkdemo.adapter.OutStockAdapter;
+import com.sznewbest.scansdkdemo.callback.DialogCallback;
+import com.sznewbest.scansdkdemo.entity.NmResponse;
 import com.sznewbest.scansdkdemo.entity.OutStock;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
 
@@ -88,62 +90,50 @@ public class OutStockActivity extends AppCompatActivity {
 
     private void refreshList(){
         // 初始化列表
-        OkGo.<String>get(NmerpConnect.OUT_STOCT_LIST)
+        OkGo.<NmResponse<List<OutStock>>>get(NmerpConnect.OUT_STOCT_LIST)
                 .tag(this)
-                .execute(new StringCallback() {
-                             @Override
-                             public void onSuccess(Response<String> response) {
-                                 List<OutStock> datas = new ArrayList<OutStock>();
-                                 Gson gson = new Gson();
-                                 JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
-                                 for (JsonElement jsonElement : arry) {
-                                     datas.add(gson.fromJson(jsonElement, OutStock.class));
-                                 }
-                                 adapter = new OutStockAdapter(OutStockActivity.this, datas);
-                                 listView.setAdapter(adapter);
-                             }
-
-                             @Override
-                             public void onError(Response<String> response) {
-                                 super.onError(response);
-                             }
-                         }
-
-                );
+                .execute(new DialogCallback<NmResponse<List<OutStock>>>(this){
+                    @Override
+                    public void onSuccess(Response<NmResponse<List<OutStock>>> response) {
+                        NmResponse<List<OutStock>> nm = response.body();
+                        adapter = new OutStockAdapter(OutStockActivity.this, nm.result);
+                        listView.setAdapter(adapter);
+                    }
+                });
     }
 
     //新建出库单
-    private void showConfirmDialog(){
-        final AlertDialog.Builder normalDialog =
-                new AlertDialog.Builder(OutStockActivity.this);
-        normalDialog.setTitle("是否新增出库单？");
-        normalDialog.setMessage("点击确定可创建一张新的出库单");
-        normalDialog.setPositiveButton("确定",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        OkGo.<String>post(NmerpConnect.CREATE_OUT_STOCK)
-                                .tag(this)
-                                .execute(new StringCallback() {
-                                    @Override
-                                    public void onSuccess(Response<String> response) {
-                                        refreshList();
-                                        Toast.makeText(OutStockActivity.this,"已成功新增一张出库单。",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    }
-                });
-        normalDialog.setNegativeButton("关闭",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        // 显示
-        normalDialog.show();
-    }
+//    private void showConfirmDialog(){
+//        final AlertDialog.Builder normalDialog =
+//                new AlertDialog.Builder(OutStockActivity.this);
+//        normalDialog.setTitle("是否新增出库单？");
+//        normalDialog.setMessage("点击确定可创建一张新的出库单");
+//        normalDialog.setPositiveButton("确定",
+//                new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        OkGo.<String>post(NmerpConnect.CREATE_OUT_STOCK)
+//                                .tag(this)
+//                                .execute(new StringCallback() {
+//                                    @Override
+//                                    public void onSuccess(Response<String> response) {
+//                                        refreshList();
+//                                        Toast.makeText(OutStockActivity.this,"已成功新增一张出库单。",
+//                                                Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                    }
+//                });
+//        normalDialog.setNegativeButton("关闭",
+//                new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+//        // 显示
+//        normalDialog.show();
+//    }
 
 
 
