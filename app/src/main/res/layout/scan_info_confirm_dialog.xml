@@ -118,10 +118,6 @@
                     android:layout_weight="1"
                     android:gravity="left"
                     android:textSize="13sp" />
-            </TableRow>
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
                 <TextView
                     android:id="@+id/prod_barCode"
                     android:layout_width="match_parent"
@@ -130,6 +126,17 @@
                     android:gravity="left"
                     android:textSize="13sp" />
             </TableRow>
+<!--            <TableRow-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent">-->
+<!--                <TextView-->
+<!--                    android:id="@+id/prod_num"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="33dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:gravity="left"-->
+<!--                    android:textSize="13sp" />-->
+<!--            </TableRow>-->
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">

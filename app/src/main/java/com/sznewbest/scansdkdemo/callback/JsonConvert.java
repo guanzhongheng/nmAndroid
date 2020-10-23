@@ -158,6 +158,8 @@ public class JsonConvert<T> implements Converter<T> {
                     throw new IllegalStateException("用户授权信息无效");
                 } else if (code == 105) {
                     throw new IllegalStateException("用户收取信息已过期");
+                }else if (code == 500) {
+                    throw new IllegalStateException(NmResponse.message);
                 } else {
                     //直接将服务端的错误信息抛出，onError中可以获取
                     throw new IllegalStateException("错误代码：" + code + "，错误信息：" + NmResponse.message);

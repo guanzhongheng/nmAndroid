@@ -27,6 +27,7 @@ import com.lzy.okgo.model.Response;
 import com.sznewbest.scansdkdemo.adapter.OutStockDetailAdapter;
 import com.sznewbest.scansdkdemo.callback.DialogCallback;
 import com.sznewbest.scansdkdemo.callback.JsonCallback;
+import com.sznewbest.scansdkdemo.entity.CusManageVo;
 import com.sznewbest.scansdkdemo.entity.NmResponse;
 import com.sznewbest.scansdkdemo.entity.OutStockDetailVo;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
@@ -67,6 +68,7 @@ public class OutStockDetailActivity extends AppCompatActivity {
         });
 
         button_detail_scan = (Button) findViewById(R.id.button_detail_scan);
+
         button_detail_scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,6 +79,39 @@ public class OutStockDetailActivity extends AppCompatActivity {
                 sendBroadcast(intentBroadcast);
             }
         });
+
+//        button_detail_scan.setOnClickListener(new View.OnClickListener() { // 测试调用返回接口
+//            @Override
+//            public void onClick(View view) {
+//                //app发送按键广播消息方式
+//                OkGo.<NmResponse<String>>post(NmerpConnect.DO_OUT_STOCK)
+//                        .tag(this)
+//                        .params("outCode","OS20201015155538")
+//                        .params("barCode","3427710530280")
+//                        .execute(new JsonCallback<NmResponse<String>>(){
+//                            @Override
+//                            public void onSuccess(Response<NmResponse<String>> response) {
+//                                NmResponse<String> nm = response.body();
+//                                if(nm.code == 200) {
+//                                    Toast.makeText(OutStockDetailActivity.this,"出库成功！",
+//                                            Toast.LENGTH_SHORT).show();
+//                                    refreshList(outCode);
+//                                }else {
+////                                    Toast.makeText(OutStockDetailActivity.this,nm.message,
+////                                            Toast.LENGTH_SHORT).show();
+//                                    ScanConfirmErrorOut(nm.message);
+//                                }
+//                            }
+//                            @Override
+//                            public void onError(Response<NmResponse<String>> response) {
+//                                super.onError(response);
+////                                Toast.makeText(OutStockDetailActivity.this, response.getException().getMessage(),
+////                                        Toast.LENGTH_SHORT).show();
+//                                ScanConfirmErrorOut(response.getException().getMessage());
+//                            }
+//                        });
+//            }
+//        });
 
         //注册接扫描结果收消息广播
         if(scanBroadcastReceiver==null) {
@@ -98,43 +133,53 @@ public class OutStockDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i("start2","1");
         refreshList(outCode);
     }
 
-    private void refreshList(String outCode){
+    private void refreshList(final String outCode){
         // 初始化列表
-        OkGo.<String>get(NmerpConnect.DETAIL_LIST)
+        OkGo.<NmResponse<List<OutStockDetailVo>>>get(NmerpConnect.DETAIL_LIST)
                 .tag(this)
                 .params("outCode",outCode)
-                .execute(new StringCallback() {
-                             @Override
-                             public void onSuccess(Response<String> response) {
-                                 datas = new ArrayList<OutStockDetailVo>();
-                                 Gson gson = new Gson();
-                                 JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
-                                 for (JsonElement jsonElement : arry) {
-                                     datas.add(gson.fromJson(jsonElement, OutStockDetailVo.class));
-                                 }
-                                 // 数据序号倒序显示
-//                                 Collections.sort(datas, new Comparator<OutStockDetailVo>() {
-//                                     @Override
-//                                     public int compare(OutStockDetailVo outStockDetailVo, OutStockDetailVo t1) {
-//                                         Long i = t1.getOutStockDetailId() - outStockDetailVo.getOutStockDetailId();
-//                                         return i.intValue();
-//                                     }
-//                                 });
-                                 adapter = new OutStockDetailAdapter(OutStockDetailActivity.this, datas);
-                                 detail_listview.setAdapter(adapter);
-                             }
+                .execute(new DialogCallback<NmResponse<List<OutStockDetailVo>>>(this) {
+                    @Override
+                    public void onSuccess(Response<NmResponse<List<OutStockDetailVo>>> response) {
+                        NmResponse<List<OutStockDetailVo>> nm = response.body();
+                        if(nm.code == 200) {
+                            adapter = new OutStockDetailAdapter(OutStockDetailActivity.this, nm.result, outCode);
+                            detail_listview.setAdapter(adapter);
+                        }
+                    }
 
-                             @Override
-                             public void onError(Response<String> response) {
-                                 super.onError(response);
-                             }
-                         }
-
-                );
+                });
+//                .execute(new StringCallback() {
+//                             @Override
+//                             public void onSuccess(Response<String> response) {
+//                                 datas = new ArrayList<OutStockDetailVo>();
+//                                 Gson gson = new Gson();
+//                                 JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
+//                                 for (JsonElement jsonElement : arry) {
+//                                     datas.add(gson.fromJson(jsonElement, OutStockDetailVo.class));
+//                                 }
+//                                 // 数据序号倒序显示
+////                                 Collections.sort(datas, new Comparator<OutStockDetailVo>() {
+////                                     @Override
+////                                     public int compare(OutStockDetailVo outStockDetailVo, OutStockDetailVo t1) {
+////                                         Long i = t1.getOutStockDetailId() - outStockDetailVo.getOutStockDetailId();
+////                                         return i.intValue();
+////                                     }
+////                                 });
+//                                 adapter = new OutStockDetailAdapter(OutStockDetailActivity.this, datas, outCode);
+//                                 detail_listview.setAdapter(adapter);
+//                             }
+//
+//                             @Override
+//                             public void onError(Response<String> response) {
+//                                 super.onError(response);
+//                             }
+//                         }
+//
+//                );
     }
 
     /**
@@ -172,21 +217,33 @@ public class OutStockDetailActivity extends AppCompatActivity {
                         if (nm.code == 200) {
                             OutStockDetailVo prodVo = nm.result;
                             if(datas == null || datas.size() == 0 ){
-                                showScanConfirmDialog(prodVo,code);
+                                prodVo.setOutCode(code);
+                                // showScanConfirmDialog(prodVo,code);
+
+                                ScanConfirmOut(prodVo,code); // 直接出库操作
                             }else{
                                 if(prodVo.getOrdCode() != null && prodVo.getCusCode() != null
                                         && prodVo.getCusCode().equals(datas.get(0).getCusCode())){
-                                    showScanConfirmDialog(prodVo,code);
+                                    // showScanConfirmDialog(prodVo,code);
+                                    ScanConfirmOut(prodVo,code); // 直接出库操作
                                 }else{
-                                    Toast.makeText(OutStockDetailActivity.this,"该产品与当前出库单中的其他产品不属于同一个关联客户！请检查后再试。",
-                                            Toast.LENGTH_LONG).show();
+//                                    Toast.makeText(OutStockDetailActivity.this,"该产品与当前出库单中的其他产品不属于同一个关联客户！请检查后再试。",
+//                                            Toast.LENGTH_LONG).show();
+                                    ScanConfirmErrorOut("该产品与当前出库单中的其他产品不属于同一个关联客户！请检查后再试。");
                                 }
                             }
                         }else {
-                            Toast.makeText(OutStockDetailActivity.this,"未能获取该条码对应产品信息。",
-                                    Toast.LENGTH_LONG).show();
+//                            Toast.makeText(OutStockDetailActivity.this,"未能获取该条码对应产品信息。",
+//                                    Toast.LENGTH_LONG).show();
+                            ScanConfirmErrorOut("未能获取该条码对应产品信息");
                         }
-
+                    }
+                    @Override
+                    public void onError(Response<NmResponse<OutStockDetailVo>> response) {
+                        super.onError(response);
+//                        Toast.makeText(OutStockDetailActivity.this, "产品信息获取失败",
+//                                Toast.LENGTH_LONG).show();
+                        ScanConfirmErrorOut("产品信息获取失败");
                     }
                 });
 //                .execute(new StringCallback() {
@@ -214,6 +271,70 @@ public class OutStockDetailActivity extends AppCompatActivity {
 //
 //                    }
 //                });
+    }
+    // 弹窗提示不同客户信息
+    private void ScanConfirmErrorOut(String showTitle) {
+        AlertDialog.Builder scDialog =
+                new AlertDialog.Builder(OutStockDetailActivity.this);
+        final View dialogView = LayoutInflater.from(OutStockDetailActivity.this)
+                .inflate(R.layout.scan_info_confirm_dialog,null);
+        scDialog.setView(dialogView);
+        scDialog.setTitle(showTitle);
+        scDialog.setNegativeButton("关闭",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        scDialog.show();
+    }
+
+    // 扫码后确认无误直接出库
+    private void ScanConfirmOut(OutStockDetailVo prodVo,final String barCode) {
+        if('1' == prodVo.getIsOut()){
+            AlertDialog.Builder scDialog =
+                    new AlertDialog.Builder(OutStockDetailActivity.this);
+            final View dialogView = LayoutInflater.from(OutStockDetailActivity.this)
+                    .inflate(R.layout.scan_info_confirm_dialog,null);
+            scDialog.setView(dialogView);
+            scDialog.setTitle("此产品已存在于出库单中");
+            scDialog.setNegativeButton("关闭",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            scDialog.show();
+        }else{
+            // 扫码即确认直接出库
+            OkGo.<NmResponse<String>>post(NmerpConnect.DO_OUT_STOCK)
+                .tag(this)
+                .params("outCode",outCode)
+                .params("barCode",barCode)
+                .execute(new JsonCallback<NmResponse<String>>(){
+                    @Override
+                    public void onSuccess(Response<NmResponse<String>> response) {
+                        NmResponse<String> nm = response.body();
+                        if(nm.code == 200) {
+                            Toast.makeText(OutStockDetailActivity.this,"出库成功！",
+                                    Toast.LENGTH_SHORT).show();
+                            refreshList(outCode);
+                        }else {
+                            Toast.makeText(OutStockDetailActivity.this,nm.message,
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+                    @Override
+                    public void onError(Response<NmResponse<String>> response) {
+                        super.onError(response);
+                        Toast.makeText(OutStockDetailActivity.this, response.getException().getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+        }
     }
 
     private void showScanConfirmDialog(OutStockDetailVo prodVo,final String barCode){
@@ -279,6 +400,7 @@ public class OutStockDetailActivity extends AppCompatActivity {
                         }
                     });
         }else{
+
             scDialog.setTitle("是否确认出库？");
             scDialog.setPositiveButton("确定",
                     new DialogInterface.OnClickListener() {
@@ -302,6 +424,12 @@ public class OutStockDetailActivity extends AppCompatActivity {
                                                         Toast.LENGTH_SHORT).show();
                                                 return;
                                             }
+                                        }
+                                        @Override
+                                        public void onError(Response<NmResponse<String>> response) {
+                                            super.onError(response);
+                                            Toast.makeText(OutStockDetailActivity.this, response.getException().getMessage(),
+                                                    Toast.LENGTH_SHORT).show();
                                         }
                                     });
 //                                    .execute(new StringCallback() {

@@ -84,6 +84,7 @@ public class ScanProdActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
+               // showDialogAfterScan("7955820888572");
                 Intent intentBroadcast = new Intent();
                 intentBroadcast.setAction("com.zkc.keycode");
                 intentBroadcast.putExtra("keyvalue", 136);
@@ -199,12 +200,21 @@ public class ScanProdActivity extends AppCompatActivity {
                     public void onSuccess(Response<NmResponse<OutStockDetailVo>> response) {
                         NmResponse<OutStockDetailVo> nm = response.body();
                         OutStockDetailVo prodVo = nm.result;
-                        if(prodVo.getStockId() == null || "".equals(prodVo.getStockId())){
-                            Toast.makeText(ScanProdActivity.this,"该条码在系统中不存在，请确认后再试。",
-                                    Toast.LENGTH_LONG).show();
-                        }else{
-                            showScanConfirmDialog(prodVo,code,carNo);
+                        if(nm.code == 200) {
+                            // showScanConfirmDialog(prodVo,code,carNo);
+                            ScanConfirmOut(prodVo,code,carNo);
+                        }else {
+//                            Toast.makeText(ScanProdActivity.this,nm.message,
+//                                    Toast.LENGTH_LONG).show();
+                            ScanConfirmErrorOut(nm.message);
                         }
+                    }
+                    @Override
+                    public void onError(Response<NmResponse<OutStockDetailVo>> response) {
+                        super.onError(response);
+//                        Toast.makeText(ScanProdActivity.this,response.getException().getMessage(),
+//                                Toast.LENGTH_SHORT).show();
+                        ScanConfirmErrorOut(response.getException().getMessage());
                     }
                 });
 //                .execute(new StringCallback() {
@@ -224,6 +234,75 @@ public class ScanProdActivity extends AppCompatActivity {
 //                });
     }
 
+
+    // 弹窗提示不同客户信息
+    private void ScanConfirmErrorOut(String showTitle) {
+        AlertDialog.Builder scDialog =
+                new AlertDialog.Builder(ScanProdActivity.this);
+        final View dialogView = LayoutInflater.from(ScanProdActivity.this)
+                .inflate(R.layout.scan_info_confirm_dialog,null);
+        scDialog.setView(dialogView);
+        scDialog.setTitle(showTitle);
+        scDialog.setNegativeButton("关闭",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        scDialog.show();
+    }
+
+    // 扫码后确认无误直接出库
+    private void ScanConfirmOut(OutStockDetailVo prodVo,final String barCode, final String carNo) {
+
+        if('1' == prodVo.getIsOut()){
+            AlertDialog.Builder scDialog =
+                    new AlertDialog.Builder(ScanProdActivity.this);
+            final View dialogView = LayoutInflater.from(ScanProdActivity.this)
+                    .inflate(R.layout.scan_info_confirm_dialog,null);
+            scDialog.setView(dialogView);
+            scDialog.setView(dialogView);
+            scDialog.setTitle("此产品已存在于出库单中");
+            scDialog.setNegativeButton("关闭",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            scDialog.show();
+        }else{
+            // 扫码即确认直接出库
+            OkGo.<NmResponse<String>>post(NmerpConnect.DO_OUT_AUTO_STOCK)
+                    .tag(this)
+                    .params("carNo",carNo)
+                    .params("barCode",barCode)
+                    .execute(new JsonCallback<NmResponse<String>>(){
+                        @Override
+                        public void onSuccess(Response<NmResponse<String>> response) {
+                            NmResponse<String> nm = response.body();
+                            if(nm.code == 200) {
+                                Toast.makeText(ScanProdActivity.this,"出库成功！",
+                                        Toast.LENGTH_SHORT).show();
+                            }else {
+                                Toast.makeText(ScanProdActivity.this,nm.message,
+                                        Toast.LENGTH_SHORT).show();
+
+                                ScanConfirmErrorOut(nm.message);
+                            }
+                        }
+                        @Override
+                        public void onError(Response<NmResponse<String>> response) {
+                            super.onError(response);
+//                            Toast.makeText(ScanProdActivity.this,response.getException().getMessage(),
+//                                    Toast.LENGTH_SHORT).show();
+                            ScanConfirmErrorOut(response.getException().getMessage());
+                        }
+                    });
+        }
+    }
+
     private void showScanConfirmDialog(OutStockDetailVo prodVo,final String barCode, final String carNo){
         AlertDialog.Builder scDialog =
                 new AlertDialog.Builder(ScanProdActivity.this);
@@ -241,37 +320,37 @@ public class ScanProdActivity extends AppCompatActivity {
         prod_itemOwner.setText("所属人:"+StringUtils.ifNull(prodVo.getItemOwner()));
 
         TextView prod_itemCgyCode = (TextView)dialogView.findViewById(R.id.prod_itemCgyCode);
-        prod_itemCgyCode.setText("类别:"+StringUtils.ifNull(prodVo.getItemCgyCodeValue()));
+        prod_itemCgyCode.setText("类别:"+StringUtils.ifNull(prodVo.getProdCgyVal()));
 
         TextView prod_itemVariety = (TextView)dialogView.findViewById(R.id.prod_itemVariety);
-        prod_itemVariety.setText("品种:"+StringUtils.ifNull(prodVo.getItemVarietyValue()));
+        prod_itemVariety.setText("品种:"+StringUtils.ifNull(prodVo.getProdVarietyVal()));
 
         TextView prod_itemColor = (TextView)dialogView.findViewById(R.id.prod_itemColor);
-        prod_itemColor.setText("颜色:"+StringUtils.ifNull(prodVo.getItemColorValue()));
+        prod_itemColor.setText("颜色:"+StringUtils.ifNull(prodVo.getProdColorVal()));
 
         TextView prod_itemYcType = (TextView)dialogView.findViewById(R.id.prod_itemYcType);
-        prod_itemYcType.setText("延长米计算类型:"+StringUtils.ifNull(prodVo.getItemYcTypeValue()));
+        prod_itemYcType.setText("延长米计算类型:"+StringUtils.ifNull(prodVo.getItemYcTypeVal()));
 
         TextView prod_itemYbType = (TextView)dialogView.findViewById(R.id.prod_itemYbType);
-        prod_itemYbType.setText("压边类型:"+StringUtils.ifNull(prodVo.getItemYbTypeValue()));
+        prod_itemYbType.setText("压边类型:"+StringUtils.ifNull(prodVo.getItemYbTypeVal()));
 
         TextView prod_itemWidth = (TextView)dialogView.findViewById(R.id.prod_itemWidth);
         prod_itemWidth.setText("宽度:"+StringUtils.ifNull(prodVo.getItemWidth())+"m");
 
         TextView prod_itemThick = (TextView)dialogView.findViewById(R.id.prod_itemThick);
-        prod_itemThick.setText("厚度:"+StringUtils.ifNull(prodVo.getItemThick())+"cm");
+        prod_itemThick.setText("厚度:"+StringUtils.ifNull(prodVo.getProdThick())+"cm");
 
         TextView prod_itemLenth = (TextView)dialogView.findViewById(R.id.prod_itemLenth);
         prod_itemLenth.setText("长度:"+StringUtils.ifNull(prodVo.getItemLenth())+"m");
 
         TextView prod_itemWeight = (TextView)dialogView.findViewById(R.id.prod_itemWeight);
-        prod_itemWeight.setText("重量:"+StringUtils.ifNull(prodVo.getItemWeight())+"kg");
+        prod_itemWeight.setText("重量:"+StringUtils.ifNull(prodVo.getProdWeight())+"kg");
 
         TextView prod_itemSq = (TextView)dialogView.findViewById(R.id.prod_itemSq);
-        prod_itemSq.setText("面积:"+StringUtils.ifNull(prodVo.getItemSq())+"㎡");
+        prod_itemSq.setText("面积:"+StringUtils.ifNull(prodVo.getItemLenth() * prodVo.getItemWidth())+"㎡");
 
         TextView prod_itemUnit = (TextView)dialogView.findViewById(R.id.prod_itemUnit);
-        prod_itemUnit.setText("单位:"+StringUtils.ifNull(prodVo.getItemUnitValue()));
+        prod_itemUnit.setText("计价方式:"+StringUtils.ifNull(prodVo.getProdPriceTypeVal()));
 
 
         Button button = (Button)dialogView.findViewById(R.id.prod_confirm);
@@ -309,6 +388,12 @@ public class ScanProdActivity extends AppCompatActivity {
                                                         Toast.LENGTH_SHORT).show();
                                                 return;
                                             }
+                                        }
+                                        @Override
+                                        public void onError(Response<NmResponse<String>> response) {
+                                            super.onError(response);
+                                            Toast.makeText(ScanProdActivity.this,response.getException().getMessage(),
+                                                    Toast.LENGTH_SHORT).show();
                                         }
                                     });
 //                                    .execute(new StringCallback() {

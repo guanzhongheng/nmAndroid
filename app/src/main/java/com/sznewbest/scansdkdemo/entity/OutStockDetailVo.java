@@ -3,6 +3,7 @@ package com.sznewbest.scansdkdemo.entity;
 public class OutStockDetailVo {
     private Long outStockDetailId;
     private String ordCode;
+    private String outCode;
     private String cusCode;
     private String barCode;
     private String itemOwner;
@@ -11,6 +12,7 @@ public class OutStockDetailVo {
     private String prodColorVal;
     private String itemYbTypeVal;
     private String itemYcTypeVal;
+    private Double itemNum;
     private Double itemLenth;
     private Double itemWidth;
     private Double prodThick;
@@ -29,6 +31,22 @@ public class OutStockDetailVo {
 
     public String getOrdCode() {
         return ordCode;
+    }
+
+    public String getOutCode() {
+        return outCode;
+    }
+
+    public void setOutCode(String outCode) {
+        this.outCode = outCode;
+    }
+
+    public Double getItemNum() {
+        return itemNum;
+    }
+
+    public void setItemNum(Double itemNum) {
+        this.itemNum = itemNum;
     }
 
     public void setOrdCode(String ordCode) {
