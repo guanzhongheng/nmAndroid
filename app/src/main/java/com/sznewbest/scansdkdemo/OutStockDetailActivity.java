@@ -40,6 +40,7 @@ import java.util.List;
 
 public class OutStockDetailActivity extends AppCompatActivity {
     private ListView detail_listview;
+    private TextView detail_number;
     private OutStockDetailAdapter adapter;
     private Button button_detail_back;
     private Button button_detail_scan;
@@ -58,6 +59,9 @@ public class OutStockDetailActivity extends AppCompatActivity {
         // 添加列表空内容视图
         View emptyView = findViewById(R.id.detail_empty_tv);
         detail_listview.setEmptyView(emptyView);
+
+        // 设置数量信息
+        detail_number = (TextView)findViewById(R.id.detail_number);
 
         button_detail_back = (Button) findViewById(R.id.button_detail_back);
         button_detail_back.setOnClickListener(new View.OnClickListener() {
@@ -148,6 +152,12 @@ public class OutStockDetailActivity extends AppCompatActivity {
                         if(nm.code == 200) {
                             adapter = new OutStockDetailAdapter(OutStockDetailActivity.this, nm.result, outCode);
                             detail_listview.setAdapter(adapter);
+                            if (nm.result.size() > 0) {
+                                detail_number.setText("出库产品数量:" + nm.result.size() );
+                            } else {
+                                detail_number.setText("出库产品数量: 0" );
+                            }
+
                         }
                     }
 

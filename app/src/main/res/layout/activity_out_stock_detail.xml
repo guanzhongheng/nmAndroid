@@ -8,17 +8,19 @@
         android:id="@+id/detail_empty_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="center_vertical"
         android:gravity="top"
-        android:padding="15dp"
+        android:padding="50dp"
         android:textSize="15sp"
         android:text="暂无数据"/>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:fillViewport="true"
+        android:layout_height="match_parent"
         android:layout_above="@+id/detail_linearlayout"
-        android:layout_height="match_parent">
+        android:layout_marginBottom="38dp"
+        android:fillViewport="true">
+
         <ListView
             android:id="@+id/detail_listview"
             android:layout_width="match_parent"
@@ -28,12 +30,29 @@
     </ScrollView>
 
     <LinearLayout
+        android:id="@+id/detail_Showlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="48dp"
+        android:gravity="bottom">
+
+        <TextView
+            android:id="@+id/detail_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_weight="1"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+
+    <LinearLayout
         android:id="@+id/detail_linearlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:gravity="bottom"
-        android:orientation="horizontal">
+        android:gravity="bottom">
 
         <Button
             android:id="@+id/button_detail_back"

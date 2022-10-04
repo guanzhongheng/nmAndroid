@@ -73,7 +73,6 @@ public class OutStockDetailAdapter extends BaseAdapter {
         }else{
             holder = (OutStockDetailAdapter.ViewHolder) view.getTag();
         }
-
         final OutStockDetailVo item = getItem(i);
         int item_index =  getCount() - i;
         holder.out_stock_detail_icon.setImageResource(R.drawable.out_stock_detail);
@@ -91,6 +90,7 @@ public class OutStockDetailAdapter extends BaseAdapter {
                 confirmDeleteDialog(item.getBarCode(),outCode);
             }
         });
+
         return view;
     }
 

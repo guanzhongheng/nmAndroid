@@ -396,24 +396,6 @@ public class ScanProdActivity extends AppCompatActivity {
                                                     Toast.LENGTH_SHORT).show();
                                         }
                                     });
-//                                    .execute(new StringCallback() {
-//                                        @Override
-//                                        public void onSuccess(Response<String> response) {
-//                                            String res = response.body().toString();
-//                                            if("-1".equals(res)){
-//                                                Toast.makeText(ScanProdActivity.this,"产品不存在出库单关联！",
-//                                                        Toast.LENGTH_SHORT).show();
-//                                                return;
-//                                            }else if("0".equals(res)){
-//                                                Toast.makeText(ScanProdActivity.this,"出库单已经存在该产品！",
-//                                                        Toast.LENGTH_SHORT).show();
-//                                                return;
-//                                            }
-//                                            Toast.makeText(ScanProdActivity.this,"出库成功！",
-//                                                    Toast.LENGTH_SHORT).show();
-//                                            dialog.dismiss();
-//                                        }
-//                                    });
 
                         }
                     });

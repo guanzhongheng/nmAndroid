@@ -2,10 +2,11 @@ package com.sznewbest.scansdkdemo.http;
 
 public class NmerpConnect {
     // public static final String BASE_URL = "http://47.105.143.43:8090";
+//     public static final String BASE_URL = "http://182.92.73.87:8080/ls";
     // public static final String BASE_URL = "http://182.92.73.87:8080/ls";
-    public static final String BASE_URL = "http://182.92.73.87:8080/ls";
-    // public static final String BASE_URL = "http://47.105.143.43:8080/ls";
-    // public static final String BASE_URL = "http://47.105.143.43:8079/ls";
+//     public static final String BASE_URL = "http://47.105.143.43:8080/ls"; // 乔斯德瑞
+     public static final String BASE_URL = "http://47.105.143.43:8079/ls"; // 淄博华海
+//    public static final String BASE_URL = "http://47.105.143.43:9091/ls"; // 外部演示
 
     private static String append(String url){
         return BASE_URL + url;
