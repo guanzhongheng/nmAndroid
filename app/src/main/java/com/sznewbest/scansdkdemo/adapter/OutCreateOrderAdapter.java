@@ -1,9 +1,10 @@
 package com.sznewbest.scansdkdemo.adapter;
 
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+
+import androidx.annotation.Nullable;
 
 import com.sznewbest.scansdkdemo.CreateOutOrderActivity;
 

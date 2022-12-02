@@ -1,14 +1,15 @@
 package com.sznewbest.scansdkdemo;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -23,6 +24,8 @@ import com.sznewbest.scansdkdemo.entity.CusManageVo;
 import com.sznewbest.scansdkdemo.entity.NmResponse;
 import com.sznewbest.scansdkdemo.entity.OutStock;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
+import com.sznewbest.scansdkdemo.model.Select;
+import com.sznewbest.scansdkdemo.spinner.SearchSpinner;
 import com.sznewbest.scansdkdemo.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -35,24 +38,29 @@ public class CreateOutOrderActivity extends AppCompatActivity {
     private Button button_back_order;
     private Button button_save_order;
     private Spinner cusCode;
+    private SearchSpinner searchSpinner;
     private EditText carNo;
 
-    private List<String> cusList = new ArrayList<>();
+    private List<Select> cusList = new ArrayList<>();
     private Map<String, String> cusMap = new HashMap<>();
-    private ArrayAdapter<String> arrayAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_outorder);
 
-        cusCode = findViewById(R.id.cus_code);
-        cusList.add("请选择");
-        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, cusList);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        cusCode.setAdapter(arrayAdapter);
-        //设置默认值
-        cusCode.setVisibility(View.VISIBLE);
+        searchSpinner = findViewById(R.id.cus_code);
+        searchSpinner.setRightImageResource(R.drawable.ic_expand_more_black);
+        searchSpinner.setHint("请选择客户");
+
+
+//        cusCode = findViewById(R.id.cus_code);
+//        cusList.add("请选择");
+//        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, cusList);
+//        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//        cusCode.setAdapter(arrayAdapter);
+//        //设置默认值
+//        cusCode.setVisibility(View.VISIBLE);
 
         // 返回按钮
         button_back_order = (Button) findViewById(R.id.button_back_order);
@@ -78,11 +86,17 @@ public class CreateOutOrderActivity extends AppCompatActivity {
 
     private void createOutPlanForCusCodeAndCarNo() {
         // 获取关联用户
-        cusCode = findViewById(R.id.cus_code);
+//        cusCode = findViewById(R.id.cus_code);
+        Select spinnerText = searchSpinner.getSelect();
         // 获取车辆牌号信息
         carNo = findViewById(R.id.car_no);
-
-        String cusName = cusCode.getSelectedItem().toString();
+        if(spinnerText == null) {
+            Toast.makeText(CreateOutOrderActivity.this,"请选择列正确的客户信息。",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+//        String cusName = cusCode.getSelectedItem().toString();
+        String cusName = spinnerText.getName();
         String carNoInfo = carNo.getText().toString();
         if("请选择".equals(cusName)){
             Toast.makeText(CreateOutOrderActivity.this,"请选择客户。",
@@ -96,7 +110,7 @@ public class CreateOutOrderActivity extends AppCompatActivity {
         }
         Map<String, String> params = new HashMap<>();
         params.put("carNo",carNoInfo);
-        params.put("cusCode",cusMap.get(cusName));
+        params.put("cusCode",spinnerText.getValue());
         showConfirmForSave(params);
     }
 
@@ -118,8 +132,12 @@ public class CreateOutOrderActivity extends AppCompatActivity {
                         if (nm.result != null && nm.result.size() > 0) {
                             for (CusManageVo c : nm.result) {
                                 if (cusMap.get(c.getCusName()) == null) {
-                                    cusList.add(c.getCusName());
-                                    cusMap.put(c.getCusName(), c.getCusCode());
+                                    Select st = new Select();
+                                    st.setValue(c.getCusCode());
+                                    st.setName(c.getCusName());
+                                    cusList.add(st);
+
+                                    searchSpinner.setItemData(cusList);
                                 }
                             }
                         }

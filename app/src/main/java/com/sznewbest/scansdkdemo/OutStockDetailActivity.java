@@ -6,9 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +13,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -32,6 +32,8 @@ import com.sznewbest.scansdkdemo.entity.NmResponse;
 import com.sznewbest.scansdkdemo.entity.OutStockDetailVo;
 import com.sznewbest.scansdkdemo.http.NmerpConnect;
 import com.sznewbest.scansdkdemo.utils.StringUtils;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,7 +81,7 @@ public class OutStockDetailActivity extends AppCompatActivity {
                 //app发送按键广播消息方式
                 Intent intentBroadcast = new Intent();
                 intentBroadcast.setAction("com.zkc.keycode");
-                intentBroadcast.putExtra("keyvalue", 136);
+                intentBroadcast.putExtra("keydown", 136);
                 sendBroadcast(intentBroadcast);
             }
         });

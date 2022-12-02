@@ -1,4 +1,4 @@
-package com.sznewbest.scansdkdemo;
+             package com.sznewbest.scansdkdemo;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,9 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,10 +15,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
@@ -87,7 +84,7 @@ public class ScanProdActivity extends AppCompatActivity {
                // showDialogAfterScan("7955820888572");
                 Intent intentBroadcast = new Intent();
                 intentBroadcast.setAction("com.zkc.keycode");
-                intentBroadcast.putExtra("keyvalue", 136);
+                intentBroadcast.putExtra("keydown", 136);
                 intentBroadcast.putExtra("carNoInfo", carNo);
                 sendBroadcast(intentBroadcast);
             }
@@ -133,31 +130,6 @@ public class ScanProdActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
-
-//        // 调用接口获取客户列表信息
-//        OkGo.<String>post(NmerpConnect.CUS_CAR_LIST)
-//                .tag(this)
-//                .execute(new StringCallback() {
-//                    @Override
-//                    public void onSuccess(Response<String> response) {
-//
-//                        List<String> datas = new ArrayList<>();
-//                        Gson gson = new Gson();
-//                        JsonArray arry = new JsonParser().parse(response.body()).getAsJsonArray();
-//                        for (JsonElement jsonElement : arry) {
-//                            carList.add(jsonElement.toString().replaceAll("\"",""));
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onError(Response<String> response) {
-//                        super.onError(response);
-//                        Toast.makeText(ScanProdActivity.this,"获取车牌号失败。",
-//                                Toast.LENGTH_SHORT).show();
-//                    }
-//
-//                });
-
     }
 
 
@@ -217,21 +189,6 @@ public class ScanProdActivity extends AppCompatActivity {
                         ScanConfirmErrorOut(response.getException().getMessage());
                     }
                 });
-//                .execute(new StringCallback() {
-//                    @Override
-//                    public void onSuccess(Response<String> response) {
-//                        Gson gson = new Gson();
-//                        OutStockDetailVo prodVo = gson.fromJson(response.body(),OutStockDetailVo.class);
-//
-//                        if(prodVo.getStockId() == null || "".equals(prodVo.getStockId())){
-//                            Toast.makeText(ScanProdActivity.this,"该条码在系统中不存在，请确认后再试。",
-//                                    Toast.LENGTH_LONG).show();
-//                        }else{
-//                            showScanConfirmDialog(prodVo,code,carNo);
-//                        }
-//
-//                    }
-//                });
     }
 
 

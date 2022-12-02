@@ -5,14 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity  {
+
+public class MainActivity extends AppCompatActivity {
 
     TextView textView_rec;
     Button button_scan;
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity  {
                 //app发送按键广播消息方式
                 Intent intentBroadcast = new Intent();
                 intentBroadcast.setAction("com.zkc.keycode");
-                intentBroadcast.putExtra("keyvalue", 136);
+                intentBroadcast.putExtra("keydown", 136);
                 sendBroadcast(intentBroadcast);
             }
         });
